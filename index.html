@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ridge Rider</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;500;700&display=swap">
+<style>
+/* Layout: one wide game stage under a slim title bar, controls legend below. Single dusk look. */
+:root {
+  --page: #141328;
+  --ink: #f3eee6;
+  --muted: #a9a3c4;
+  --panel: rgba(20, 19, 40, 0.86);
+  --line: #2c2a52;
+  --coin: #ffcf4a;
+  --flame: #ff5a36;
+  --display: "Bungee", "Impact", "Arial Black", sans-serif;
+  --body: "Rubik", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { background: var(--page); color: var(--ink); margin: 0; }
+body {
+  font-family: var(--body);
+  font-size: 15px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 18px 24px;
+}
+.wrap { max-width: 1100px; margin: 0 auto; display: grid; gap: 14px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 18px; }
+h1 { font-family: var(--display); font-weight: 400; font-size: clamp(26px, 5vw, 40px); margin: 0; letter-spacing: 0.02em; line-height: 1; }
+h1 span { color: var(--flame); }
+.tag { color: var(--muted); margin: 0; font-size: 14px; }
+.stage {
+  position: relative;
+  width: 100%;
+  height: clamp(300px, 62vh, 540px);
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+}
+canvas { display: block; width: 100%; height: 100%; }
+.hud {
+  position: absolute; top: 10px; left: 12px; right: 12px;
+  display: flex; justify-content: space-between; gap: 10px;
+  pointer-events: none;
+  font-family: var(--display);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.35);
+}
+.hud .group { display: flex; gap: 16px; }
+.stat { display: grid; line-height: 1.05; }
+.stat small { font-family: var(--body); font-weight: 700; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(243,238,230,0.75); }
+.stat b { font-weight: 400; font-size: clamp(18px, 3vw, 26px); }
+.stat.coins b { color: var(--coin); }
+.stat.lvl b { color: var(--flame); }
+@media (max-width: 480px) { .hud .group { gap: 10px; } }
+.overlay {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  pointer-events: none;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 22px;
+  text-align: center;
+  max-width: min(360px, 86%);
+  display: grid; gap: 8px;
+}
+.card h2 { font-family: var(--display); font-weight: 400; margin: 0; font-size: clamp(22px, 4vw, 30px); text-wrap: balance; }
+.card p { margin: 0; color: var(--muted); line-height: 1.45; }
+.card .big { font-family: var(--display); font-size: 34px; color: var(--coin); font-variant-numeric: tabular-nums; }
+.card .go { color: var(--ink); font-weight: 700; letter-spacing: 0.04em; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 22px; color: var(--muted); font-size: 14px; margin: 0; padding: 0; list-style: none; }
+.legend li { display: flex; gap: 8px; align-items: center; }
+kbd {
+  font-family: var(--body); font-weight: 700; font-size: 12px;
+  color: var(--ink); background: #232147; border: 1px solid var(--line);
+  border-bottom-width: 3px; border-radius: 6px; padding: 2px 7px;
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Ridge <span>Rider</span></h1>
+    <p class="tag">Jump the logs, clear the gaps, stick the backflips.</p>
+  </header>
+
+  <div class="stage" id="stage" tabindex="0" aria-label="Game area. Press Space or tap to jump.">
+    <canvas id="c"></canvas>
+    <div class="hud">
+      <div class="group">
+        <div class="stat"><small>Score</small><b id="score">0</b></div>
+        <div class="stat"><small>Distance</small><b id="dist">0 m</b></div>
+        <div class="stat lvl"><small>Level</small><b id="level">1</b></div>
+      </div>
+      <div class="group">
+        <div class="stat coins"><small>Coins</small><b id="coins">0</b></div>
+        <div class="stat"><small>Best</small><b id="best">0</b></div>
+      </div>
+    </div>
+    <div class="overlay" id="overlay">
+      <div class="card" id="card">
+        <h2>Ready to ride</h2>
+        <p>Tap or press Space to jump. Press again mid-air and hold to backflip. Land wheels-down.</p>
+        <p class="go">Tap or press Space to start</p>
+      </div>
+    </div>
+  </div>
+
+  <ul class="legend">
+    <li><kbd>Space</kbd> or tap: jump</li>
+    <li>Tap again in the air and hold: backflip (+150, double flip +600)</li>
+    <li>Ramps launch you automatically; a JUMP! sign means jump at the lip</li>
+    <li>New level every 250 m</li>
+    <li>Coins: +25</li>
+  </ul>
+</div>
+
+<script>
+(function () {
+  const H = 420, GY = 340, G = 2300, JUMP = 840, SPIN = 11.5, TAU = Math.PI * 2;
+  const stage = document.getElementById('stage');
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const overlay = document.getElementById('overlay');
+  const card = document.getElementById('card');
+  const elScore = document.getElementById('score');
+  const elDist = document.getElementById('dist');
+  const elCoins = document.getElementById('coins');
+  const elBest = document.getElementById('best');
+  const elLevel = document.getElementById('level');
+
+  let W = 800, scale = 1, dpr = 1;
+  let state = 'ready', deadAt = 0, now = 0;
+  let rider, feats, coins, parts, pops, nextX, coinCount, bonus, best = 0, deathMsg = '', shownLevel = 1, banner = null;
+
+  function loadBest() { try { return parseInt(localStorage.getItem('ridge-rider-best') || '0', 10) || 0; } catch (e) { return 0; } }
+  function saveBest(v) { try { localStorage.setItem('ridge-rider-best', String(v)); } catch (e) {} }
+
+  function resize() {
+    const r = stage.getBoundingClientRect();
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(r.width * dpr);
+    canvas.height = Math.round(r.height * dpr);
+    scale = r.height / H;
+    W = r.width / scale;
+  }
+
+  function speedAt(x) { return 340 + Math.min(Math.max(0, x) / 32, 440); }
+  function riderSX() { return Math.max(110, W * 0.26); }
+
+  function reset() {
+    rider = { x: 0, y: GY, vy: 0, a: 0, av: 0, ground: true, rot: 0, ramp: null, spin: false, dead: false };
+    feats = []; coins = []; parts = []; pops = [];
+    nextX = 800; coinCount = 0; bonus = 0; shownLevel = 1; banner = null;
+    gen();
+  }
+
+  function arc(cx, topY, n, span) {
+    for (let i = 0; i < n; i++) {
+      const t = n === 1 ? 0 : (i / (n - 1)) * 2 - 1;
+      coins.push({ x: cx + t * span, y: topY + t * t * 50, got: false });
+    }
+  }
+
+  // ---------- level design ----------
+  const LEVEL_LEN = 2500; // 250 m per level
+  function levelAt(x) { return 1 + Math.floor(Math.max(0, x) / LEVEL_LEN); }
+  function diff(x) { return Math.min(1, (levelAt(x) - 1) / 9); } // 0 at level 1, maxed at level 10
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+  function airDist(x) { return speedAt(x) * 2 * JUMP / G; } // flat jump distance
+  function flight(vy, h) { return (vy + Math.sqrt(vy * vy + 2 * G * h)) / G; }
+  function rampLand(x, h, w) { const v = speedAt(x); return v * flight(v * h / w * 0.9 + 520, h); }
+  function rampJumpLand(x, h, w) { const v = speedAt(x); return v * flight(JUMP + v * h / w * 0.6, h) + 40; }
+
+  function obstacle(x, h) {
+    const w = rnd(26, 38);
+    feats.push({ k: Math.random() < 0.55 ? 'log' : 'rock', x, w, h });
+    return w;
+  }
+  function rampGap(d, t, rh, gw) {
+    const rw = 140;
+    feats.push({ k: 'ramp', x: d, w: rw, h: rh });
+    feats.push({ k: 'gap', x: d + rw + 10, w: gw });
+    return d + rw + 10 + gw;
+  }
+
+  const BUILD = {
+    // single log or rock, taller as you go
+    obstacle(d, t) {
+      const h = rnd(24, 32 + 24 * t);
+      const w = obstacle(d, h);
+      arc(d + w / 2, GY - h - 95, 3, 45);
+      return d + w;
+    },
+    // gap you jump from flat ground, wider as you go
+    gap(d, t) {
+      const A = airDist(d);
+      const w = A * rnd(0.26, 0.34 + 0.24 * t);
+      feats.push({ k: 'gap', x: d, w });
+      arc(d + w / 2, GY - 125, 3, 45);
+      return d + w;
+    },
+    // ramp launches you over a gap
+    ramp(d, t) {
+      const rh = rnd(50, 64), land = rampLand(d + 140, rh, 140);
+      const gw = Math.min(land * rnd(0.45, 0.6 + 0.25 * t), land - 50);
+      const end = rampGap(d, t, rh, gw);
+      arc(d + 150 + gw / 2, GY - 215, 5, 90);
+      return Math.max(end, d + 140 + land);
+    },
+    // two or three logs close together: clear them in one jump
+    cluster(d, t) {
+      const n = t > 0.5 && Math.random() < 0.45 ? 3 : 2;
+      const span = airDist(d) * 0.4;
+      let x = d;
+      for (let i = 0; i < n; i++) {
+        const w = obstacle(x, rnd(24, 34));
+        x += w + (i < n - 1 ? Math.max(18, (span - n * 32) / (n - 1) * rnd(0.5, 1)) : 0);
+      }
+      arc((d + x) / 2, GY - 150, 4, 60);
+      return x;
+    },
+    // gap, land, then jump a log right away
+    gapLog(d, t) {
+      const A = airDist(d);
+      const gw = A * rnd(0.26, 0.34);
+      feats.push({ k: 'gap', x: d, w: gw });
+      const lx = d + gw + A * rnd(0.85, 1.0);
+      const w = obstacle(lx, rnd(24, 34));
+      arc(d + gw / 2, GY - 125, 3, 40);
+      return lx + w;
+    },
+    // ramp, gap, ramp, gap: second ramp sits where you land
+    doubleRamp(d, t) {
+      let x = d;
+      for (let i = 0; i < 2; i++) {
+        const rh = rnd(50, 60), land = rampLand(x + 140, rh, 140);
+        const gw = Math.min(land * rnd(0.5, 0.65), land - 60);
+        rampGap(x, t, rh, gw);
+        arc(x + 150 + gw / 2, GY - 215, 4, 80);
+        x = x + 140 + land + rnd(10, 40);
+      }
+      return x;
+    },
+    // gap too wide for the ramp alone: jump at the lip
+    bigGap(d, t) {
+      const rh = 62, auto = rampLand(d + 140, rh, 140), boosted = rampJumpLand(d + 140, rh, 140);
+      const gw = Math.min(boosted - 70, auto + rnd(40, 70 + 40 * t));
+      rampGap(d, t, rh, gw);
+      feats.push({ k: 'sign', x: d - 70 });
+      arc(d + 150 + gw / 2, GY - 270, 6, 120);
+      return d + 140 + boosted;
+    },
+    coins(d) {
+      for (let i = 0; i < 6; i++) coins.push({ x: d + i * 34, y: GY - 30, got: false });
+      return d + 200;
+    },
+  };
+
+  function pickFeature(level) {
+    const pool = [['obstacle', 4], ['gap', 3], ['ramp', 3], ['coins', level < 4 ? 1 : 0.4]];
+    if (level >= 3) pool.push(['cluster', 3]);
+    if (level >= 4) pool.push(['gapLog', 2.5]);
+    if (level >= 5) pool.push(['doubleRamp', 2]);
+    if (level >= 6) pool.push(['bigGap', 2]);
+    let total = pool.reduce((s, p) => s + p[1], 0), r = Math.random() * total;
+    for (const [k, w] of pool) { if ((r -= w) < 0) return k; }
+    return 'obstacle';
+  }
+
+  function gen() {
+    while (nextX < rider.x + W + 900) {
+      const d = nextX;
+      const t = diff(d);
+      const end = BUILD[pickFeature(levelAt(d))](d, t);
+      // breathing room shrinks each level
+      const gapTime = rnd(1.2 - 0.42 * t, 1.85 - 0.75 * t);
+      nextX = end + speedAt(end) * gapTime;
+    }
+    const cut = rider.x - W;
+    feats = feats.filter(f => f.x + (f.w || 0) > cut);
+    coins = coins.filter(c => c.x > cut && !c.got);
+  }
+
+  function rampAt(wx) {
+    for (const f of feats) if (f.k === 'ramp' && wx >= f.x && wx <= f.x + f.w) return f;
+    return null;
+  }
+  function groundAt(wx) {
+    for (const f of feats) {
+      if (f.k === 'gap' && wx > f.x && wx < f.x + f.w) return null;
+      if (f.k === 'ramp' && wx >= f.x && wx <= f.x + f.w) return GY - f.h * (wx - f.x) / f.w;
+    }
+    return GY;
+  }
+  function norm(a) { a = ((a + Math.PI) % TAU + TAU) % TAU - Math.PI; return a; }
+
+  function burst(x, y, n, cols, spd, up) {
+    for (let i = 0; i < n; i++) {
+      const ang = (up ? -Math.PI / 2 : 0) + (Math.random() - 0.5) * (up ? 2.4 : TAU);
+      const s = spd * (0.4 + Math.random() * 0.8);
+      parts.push({ x, y, vx: Math.cos(ang) * s, vy: Math.sin(ang) * s, life: 0.5 + Math.random() * 0.5, max: 1, c: cols[i % cols.length], r: 2 + Math.random() * 3 });
+    }
+  }
+  function pop(text, col) { pops.push({ text, x: rider.x, y: rider.y - 70, life: 1.2, c: col || '#ffcf4a' }); }
+
+  function jump() {
+    const spd = speedAt(rider.x);
+    const extra = rider.ramp ? spd * (rider.ramp.h / rider.ramp.w) * 0.6 : 0;
+    rider.ground = false; rider.vy = -JUMP - extra; rider.ramp = null; rider.rot = 0; rider.spin = false;
+    burst(rider.x - 10, rider.y, 8, ['#8a6243', '#a9805c'], 160, true);
+  }
+
+  function land(g) {
+    const rp = rampAt(rider.x);
+    const target = rp ? -Math.atan(rp.h / rp.w) : 0;
+    if (Math.abs(norm(rider.a - target)) > 0.62) return crash('Bad landing');
+    const flips = Math.floor((Math.abs(rider.rot) + 0.7) / TAU);
+    rider.ground = true; rider.y = g; rider.vy = 0; rider.av = 0; rider.spin = false; rider.a = target; rider.ramp = rp;
+    burst(rider.x, g, 10, ['#8a6243', '#a9805c', '#c49a72'], 180, true);
+    if (flips > 0) {
+      const pts = flips * 150 * flips;
+      bonus += pts;
+      pop((flips > 1 ? flips + 'x ' : '') + 'Backflip +' + pts, '#ffcf4a');
+    }
+  }
+
+  function crash(msg) {
+    if (rider.dead) return;
+    rider.dead = true; state = 'dead'; deadAt = now; deathMsg = msg;
+    rider.vy = -420; rider.av = 9; rider.ground = false;
+    burst(rider.x, rider.y - 15, 26, ['#ff5a36', '#ffcf4a', '#f3eee6'], 380, false);
+    const s = scoreNow();
+    const newBest = s > best;
+    if (newBest) { best = s; saveBest(best); }
+    showCard(
+      '<h2>' + msg + '</h2>' +
+      '<div class="big">' + s.toLocaleString() + '</div>' +
+      '<p>Level ' + levelAt(rider.x) + ', ' + Math.floor(rider.x / 10).toLocaleString() + ' m, ' + coinCount + ' coins' + (newBest ? ', new best' : ', best ' + best.toLocaleString()) + '</p>' +
+      '<p class="go">Tap or press Space to ride again</p>'
+    );
+  }
+
+  function showCard(html) { card.innerHTML = html; overlay.hidden = false; }
+  function scoreNow() { return Math.floor(rider.x / 10) + coinCount * 25 + bonus; }
+
+  function press() {
+    if (state === 'ready') { state = 'run'; overlay.hidden = true; return; }
+    if (state === 'dead') { if (now - deadAt > 0.6) { reset(); state = 'run'; overlay.hidden = true; } return; }
+    if (rider.ground) jump(); else rider.spin = true;
+  }
+  function release() { if (rider) rider.spin = false; }
+
+  function update(dt) {
+    for (const p of parts) { p.vy += 900 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; }
+    parts = parts.filter(p => p.life > 0);
+    for (const p of pops) { p.life -= dt; p.y -= 40 * dt; }
+    if (banner && (banner.life -= dt) <= 0) banner = null;
+    pops = pops.filter(p => p.life > 0);
+
+    if (state === 'dead') {
+      if (rider.y < H + 200) {
+        rider.vy += G * dt; rider.y += rider.vy * dt; rider.a += rider.av * dt;
+        const g = groundAt(rider.x);
+        if (g !== null && rider.y > g && rider.vy > 0 && rider.y - rider.vy * dt <= g + 8) { rider.y = g; rider.vy *= -0.3; rider.av *= 0.5; }
+      }
+      return;
+    }
+    if (state !== 'run') return;
+
+    const spd = speedAt(rider.x);
+    rider.x += spd * dt;
+    const lv = levelAt(rider.x);
+    if (lv > shownLevel) {
+      shownLevel = lv;
+      const NEW = { 2: 'Taller logs, wider gaps', 3: 'Log clusters: clear them in one jump', 4: 'Gap into log', 5: 'Double ramps', 6: 'Big gaps: jump at the ramp lip' };
+      banner = { text: 'Level ' + lv, sub: NEW[lv] || (lv >= 10 ? 'Max chaos' : 'Faster and tighter'), life: 2.2 };
+    }
+
+    if (rider.ground) {
+      const g = groundAt(rider.x);
+      const rp = rampAt(rider.x);
+      if (g === null) {
+        rider.ground = false; rider.vy = 0; rider.rot = 0; rider.ramp = null;
+      } else if (rider.ramp && !rp) {
+        rider.ground = false;
+        rider.vy = -(spd * (rider.ramp.h / rider.ramp.w) * 0.9 + 520);
+        rider.rot = 0; rider.ramp = null;
+      } else {
+        rider.y = g; rider.ramp = rp; rider.a = rp ? -Math.atan(rp.h / rp.w) : 0;
+      }
+    } else {
+      if (rider.spin) rider.av = -SPIN; else rider.av *= Math.exp(-14 * dt);
+      rider.a += rider.av * dt; rider.rot += rider.av * dt;
+      if (!rider.spin) {
+        const n = norm(rider.a);
+        if (Math.abs(n) < 1.1) rider.a = n * Math.exp(-2.5 * dt);
+      }
+      const py = rider.y;
+      rider.vy += G * dt; rider.y += rider.vy * dt;
+      const g = groundAt(rider.x);
+      if (g !== null && rider.y >= g) {
+        if (py <= g + 8) land(g); else return crash('Clipped the ledge');
+      }
+      if (rider.y > H + 60) return crash('Lost it in the gap');
+    }
+
+    for (const f of feats) {
+      if ((f.k === 'log' || f.k === 'rock') && rider.x + 20 > f.x + 3 && rider.x - 20 < f.x + f.w - 3 && rider.y > GY - f.h + 4) {
+        return crash(f.k === 'log' ? 'Hit a log' : 'Hit a rock');
+      }
+    }
+    const cy = rider.y - 22;
+    for (const c of coins) {
+      if (!c.got && Math.hypot(c.x - rider.x, c.y - cy) < 30) {
+        c.got = true; coinCount++;
+        burst(c.x, c.y, 6, ['#ffcf4a', '#fff1b8'], 140, false);
+      }
+    }
+    gen();
+  }
+
+  // ---------- drawing ----------
+  function ridgeY(x, base, amp, seed) {
+    return base - amp * (Math.sin(x * 0.0042 + seed) * 0.55 + Math.sin(x * 0.011 + seed * 2.3) * 0.3 + Math.sin(x * 0.027 + seed * 5.1) * 0.15);
+  }
+
+  function drawBackground(camX) {
+    const sky = ctx.createLinearGradient(0, 0, 0, GY);
+    sky.addColorStop(0, '#1d1b3a');
+    sky.addColorStop(0.55, '#5a3a6e');
+    sky.addColorStop(1, '#f08a4b');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    for (let i = 0; i < 40; i++) {
+      const sx = ((i * 137.5 - camX * 0.02) % W + W) % W, sy = (i * 53) % 150;
+      ctx.globalAlpha = 0.25 + (i % 5) * 0.12;
+      ctx.fillRect(sx, sy, 1.6, 1.6);
+    }
+    ctx.globalAlpha = 1;
+
+    const sunX = W * 0.72;
+    const glow = ctx.createRadialGradient(sunX, 250, 10, sunX, 250, 140);
+    glow.addColorStop(0, 'rgba(255,214,130,0.55)'); glow.addColorStop(1, 'rgba(255,214,130,0)');
+    ctx.fillStyle = glow; ctx.fillRect(sunX - 140, 110, 280, 280);
+    ctx.fillStyle = '#ffd68a'; ctx.beginPath(); ctx.arc(sunX, 250, 44, 0, TAU); ctx.fill();
+
+    const layers = [
+      { f: 0.08, base: 250, amp: 46, seed: 1.2, col: '#6b4f86' },
+      { f: 0.2, base: 278, amp: 36, seed: 3.7, col: '#433a6e' },
+      { f: 0.42, base: 305, amp: 28, seed: 7.9, col: '#2a2550' },
+    ];
+    for (const L of layers) {
+      ctx.fillStyle = L.col; ctx.beginPath(); ctx.moveTo(0, H);
+      for (let x = 0; x <= W + 8; x += 8) ctx.lineTo(x, ridgeY(x + camX * L.f, L.base, L.amp, L.seed));
+      ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    }
+    // tree line on nearest ridge
+    ctx.fillStyle = '#1e1a40';
+    const off = camX * 0.42;
+    for (let i = Math.floor(off / 22) - 1; i < (off + W) / 22 + 1; i++) {
+      const wx = i * 22 + ((i * 7919) % 11);
+      const sx = wx - off;
+      const by = ridgeY(wx, 305, 28, 7.9) + 4;
+      const h = 14 + ((i * 31) % 12);
+      ctx.beginPath(); ctx.moveTo(sx - 6, by); ctx.lineTo(sx, by - h); ctx.lineTo(sx + 6, by); ctx.fill();
+    }
+  }
+
+  function drawGround(camX) {
+    const gaps = feats.filter(f => f.k === 'gap').sort((a, b) => a.x - b.x);
+    let x0 = camX - 20;
+    const end = camX + W + 20;
+    const span = (a, b) => {
+      if (b <= a) return;
+      const sa = a - camX, sb = b - camX;
+      const dirt = ctx.createLinearGradient(0, GY, 0, H);
+      dirt.addColorStop(0, '#7a4e2e'); dirt.addColorStop(1, '#3d2617');
+      ctx.fillStyle = dirt; ctx.fillRect(sa, GY, sb - sa, H - GY);
+      ctx.fillStyle = '#4e8a3e'; ctx.fillRect(sa, GY - 2, sb - sa, 7);
+      ctx.fillStyle = '#3b6b30'; ctx.fillRect(sa, GY + 5, sb - sa, 3);
+      // pebbles
+      ctx.fillStyle = 'rgba(0,0,0,0.18)';
+      for (let p = Math.ceil(a / 37) * 37; p < b; p += 37) ctx.fillRect(p - camX, GY + 20 + ((p * 13) % 40), 4, 3);
+    };
+    for (const g of gaps) {
+      if (g.x + g.w < x0) continue;
+      if (g.x > end) break;
+      span(x0, g.x);
+      // pit
+      const sx = g.x - camX;
+      ctx.fillStyle = '#120f24'; ctx.fillRect(sx, GY + 6, g.w, H - GY);
+      x0 = g.x + g.w;
+    }
+    span(x0, end);
+
+    // distance markers every 100 m
+    const step = 1000;
+    for (let m = Math.ceil((camX - 40) / step) * step; m < end; m += step) {
+      if (m === 0 || groundAt(m) === null) continue;
+      const sx = m - camX;
+      ctx.fillStyle = '#e9e1d2'; ctx.fillRect(sx - 2, GY - 34, 4, 34);
+      ctx.fillStyle = '#ff5a36'; ctx.fillRect(sx - 2, GY - 34, 26, 14);
+      ctx.fillStyle = '#fff'; ctx.font = '10px "Bungee", sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText((m / 10) + '', sx + 1, GY - 23);
+    }
+  }
+
+  function drawFeats(camX) {
+    for (const f of feats) {
+      const sx = f.x - camX;
+      if (sx > W + 50 || sx + (f.w || 0) < -50) continue;
+      if (f.k === 'sign') {
+        ctx.fillStyle = '#5b3a22'; ctx.fillRect(sx - 2, GY - 46, 4, 46);
+        ctx.fillStyle = '#ffcf4a'; ctx.strokeStyle = '#1d1b3a'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(sx - 26, GY - 66, 52, 22, 4); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#1d1b3a'; ctx.font = '11px "Bungee", sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('JUMP!', sx, GY - 51);
+      } else if (f.k === 'ramp') {
+        ctx.fillStyle = '#5b3a22';
+        for (let i = 1; i <= 3; i++) { const px = sx + f.w * i / 4; ctx.fillRect(px - 2, GY - f.h * i / 4, 4, f.h * i / 4); }
+        ctx.fillStyle = '#c9874a'; ctx.strokeStyle = '#6e4426'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(sx, GY); ctx.lineTo(sx + f.w, GY - f.h); ctx.lineTo(sx + f.w, GY - f.h + 8); ctx.lineTo(sx + 8, GY); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#5b3a22'; ctx.fillRect(sx + f.w - 4, GY - f.h, 5, f.h);
+      } else if (f.k === 'log') {
+        const y = GY - f.h;
+        ctx.fillStyle = '#7a4a26'; ctx.strokeStyle = '#3e2412'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(sx, y, f.w, f.h, 6); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#d9a46a';
+        ctx.beginPath(); ctx.ellipse(sx + f.w / 2, y + f.h / 2, f.w / 2 - 4, f.h / 2 - 4, 0, 0, TAU); ctx.fill();
+        ctx.strokeStyle = '#9b6a3c'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.ellipse(sx + f.w / 2, y + f.h / 2, f.w / 4, f.h / 4, 0, 0, TAU); ctx.stroke();
+      } else if (f.k === 'rock') {
+        ctx.fillStyle = '#8b8aa0'; ctx.strokeStyle = '#4b4a62'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(sx - 2, GY + 2); ctx.lineTo(sx + 2, GY - f.h * 0.6); ctx.lineTo(sx + f.w * 0.35, GY - f.h);
+        ctx.lineTo(sx + f.w * 0.8, GY - f.h * 0.85); ctx.lineTo(sx + f.w + 2, GY - f.h * 0.3); ctx.lineTo(sx + f.w + 3, GY + 2);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,0.18)';
+        ctx.beginPath(); ctx.moveTo(sx + 5, GY - f.h * 0.55); ctx.lineTo(sx + f.w * 0.35, GY - f.h + 3); ctx.lineTo(sx + f.w * 0.45, GY - f.h * 0.6); ctx.fill();
+      }
+    }
+  }
+
+  function drawCoins(camX, t) {
+    for (const c of coins) {
+      if (c.got) continue;
+      const sx = c.x - camX; if (sx < -20 || sx > W + 20) continue;
+      const y = c.y + Math.sin(t * 4 + c.x * 0.05) * 3;
+      const squash = Math.abs(Math.cos(t * 3 + c.x * 0.02)) * 0.6 + 0.4;
+      ctx.fillStyle = '#ffcf4a'; ctx.strokeStyle = '#b8861b'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(sx, y, 9 * squash, 9, 0, 0, TAU); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#fff1b8'; ctx.beginPath(); ctx.ellipse(sx - 2 * squash, y - 2, 2.5 * squash, 3, 0, 0, TAU); ctx.fill();
+    }
+  }
+
+  function wheel(x, y, spin) {
+    ctx.fillStyle = '#16142c'; ctx.beginPath(); ctx.arc(x, y, 11, 0, TAU); ctx.fill();
+    ctx.strokeStyle = '#9d98b8'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(x, y, 6.5, 0, TAU); ctx.stroke();
+    for (let i = 0; i < 3; i++) {
+      const a = spin + i * Math.PI / 3;
+      ctx.beginPath(); ctx.moveTo(x - Math.cos(a) * 6.5, y - Math.sin(a) * 6.5); ctx.lineTo(x + Math.cos(a) * 6.5, y + Math.sin(a) * 6.5); ctx.stroke();
+    }
+  }
+
+  function drawRider(camX) {
+    const sx = rider.x - camX;
+    ctx.save();
+    ctx.translate(sx, rider.y - 11);
+    ctx.rotate(rider.a);
+    const spin = rider.x / 11;
+    wheel(-19, 0, spin); wheel(19, 0, spin);
+    // frame
+    ctx.strokeStyle = '#2b2948'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-19, 0); ctx.lineTo(-5, -12); ctx.lineTo(19, 0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(19, 0); ctx.lineTo(13, -20); ctx.stroke();
+    // body / tank
+    ctx.fillStyle = '#ff5a36';
+    ctx.beginPath(); ctx.moveTo(-16, -12); ctx.lineTo(-4, -18); ctx.lineTo(12, -18); ctx.lineTo(14, -11); ctx.lineTo(-2, -8); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#ffe1c9'; ctx.fillRect(4, -16, 6, 2);
+    // seat
+    ctx.fillStyle = '#16142c'; ctx.fillRect(-15, -17, 12, 3);
+    // handlebar
+    ctx.strokeStyle = '#16142c'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(12, -21); ctx.lineTo(9, -26); ctx.stroke();
+    // rider
+    ctx.strokeStyle = '#2a8f84'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(-8, -18); ctx.lineTo(-2, -34); ctx.stroke(); // torso
+    ctx.strokeStyle = '#1d1b3a'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(-8, -18); ctx.lineTo(2, -14); ctx.lineTo(4, -6); ctx.stroke(); // leg
+    ctx.strokeStyle = '#38c6b5'; ctx.lineWidth = 3.5;
+    ctx.beginPath(); ctx.moveTo(-2, -32); ctx.lineTo(5, -26); ctx.lineTo(9, -26); ctx.stroke(); // arm
+    ctx.fillStyle = '#ffcf4a'; ctx.beginPath(); ctx.arc(0, -40, 7, 0, TAU); ctx.fill(); // helmet
+    ctx.fillStyle = '#1d1b3a'; ctx.fillRect(2, -42, 6, 4); // visor
+    ctx.restore();
+  }
+
+  function draw(t) {
+    ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+    const camX = rider.x - riderSX();
+    drawBackground(camX);
+    drawGround(camX);
+    drawFeats(camX);
+    drawCoins(camX, t);
+    drawRider(camX);
+    for (const p of parts) {
+      ctx.globalAlpha = Math.max(0, Math.min(1, p.life * 2));
+      ctx.fillStyle = p.c; ctx.fillRect(p.x - camX - p.r / 2, p.y - p.r / 2, p.r, p.r);
+    }
+    ctx.globalAlpha = 1;
+    ctx.textAlign = 'center';
+    for (const p of pops) {
+      ctx.globalAlpha = Math.min(1, p.life * 1.5);
+      ctx.font = '18px "Bungee", sans-serif';
+      ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillText(p.text, p.x - camX + 2, p.y + 2);
+      ctx.fillStyle = p.c; ctx.fillText(p.text, p.x - camX, p.y);
+    }
+    ctx.globalAlpha = 1;
+    if (banner) {
+      const a = Math.min(1, banner.life * 2, (2.2 - banner.life) * 4);
+      ctx.globalAlpha = a; ctx.textAlign = 'center';
+      ctx.font = '40px "Bungee", sans-serif';
+      ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillText(banner.text, W / 2 + 3, 132 + 3);
+      ctx.fillStyle = '#ff5a36'; ctx.fillText(banner.text, W / 2, 132);
+      ctx.font = '500 15px "Rubik", sans-serif'; ctx.fillStyle = '#f3eee6';
+      ctx.fillText(banner.sub, W / 2, 158);
+      ctx.globalAlpha = 1;
+    }
+    if (state === 'run' && !rider.ground && rider.spin) {
+      ctx.font = '11px "Rubik", sans-serif'; ctx.fillStyle = 'rgba(243,238,230,0.8)';
+      ctx.fillText('flipping', rider.x - camX, rider.y - 60);
+    }
+  }
+
+  function hud() {
+    elScore.textContent = scoreNow().toLocaleString();
+    elDist.textContent = Math.floor(rider.x / 10).toLocaleString() + ' m';
+    elCoins.textContent = coinCount;
+    elBest.textContent = best.toLocaleString();
+    elLevel.textContent = levelAt(rider.x);
+  }
+
+  let last = 0;
+  function frame(ts) {
+    const dt = Math.min(0.033, (ts - last) / 1000 || 0);
+    last = ts; now = ts / 1000;
+    update(dt);
+    draw(now);
+    hud();
+    requestAnimationFrame(frame);
+  }
+
+  // input
+  window.addEventListener('keydown', e => {
+    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+      e.preventDefault();
+      if (!e.repeat) press();
+    }
+  });
+  window.addEventListener('keyup', e => {
+    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') release();
+  });
+  stage.addEventListener('pointerdown', e => { e.preventDefault(); stage.focus({ preventScroll: true }); press(); });
+  window.addEventListener('pointerup', release);
+  window.addEventListener('pointercancel', release);
+  stage.addEventListener('contextmenu', e => e.preventDefault());
+  window.addEventListener('resize', resize);
+  document.addEventListener('visibilitychange', () => { last = performance.now(); release(); });
+
+  function start(data) {
+    best = Math.max(loadBest(), (data && data.best) || 0);
+    resize();
+    reset();
+    requestAnimationFrame(ts => { last = ts; frame(ts); });
+  }
+  start({});
+})();
+</script>
+
+</body>
+</html>
