@@ -82,6 +82,65 @@ canvas { display: block; width: 100%; height: 100%; }
 }
 .card { pointer-events: auto; }
 .modes { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.lb-open {
+  justify-self: center; font: inherit; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; cursor: pointer;
+  color: var(--coin); background: transparent; border: 1px solid rgba(255, 207, 74, 0.45); border-radius: 999px; padding: 5px 14px;
+}
+.lb-open:hover { background: rgba(255, 207, 74, 0.12); }
+.lb-open:focus-visible, .lb button:focus-visible, .lb input:focus-visible { outline: 2px solid var(--coin); outline-offset: 2px; }
+.lb-rank { color: var(--coin) !important; font-weight: 700; min-height: 1.2em; }
+.lb { display: grid; gap: 10px; text-align: left; min-width: min(300px, 74vw); }
+.lb-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.lb-back { font: inherit; font-size: 13px; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; cursor: pointer; }
+.lb-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: #1b1a38; border-radius: 9px; padding: 3px; }
+.lb-tabs button { font: inherit; font-size: 13px; color: var(--muted); background: transparent; border: 0; border-radius: 7px; padding: 6px 4px; cursor: pointer; }
+.lb-tabs button[aria-selected="true"] { background: var(--flame); color: var(--ink); font-weight: 700; }
+.card .lb-scope, .card .lb-note, .card .lb-empty { font-size: 12px; margin: 0; }
+.lb-empty { padding: 14px 0; text-align: center; }
+.lb-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-variant-numeric: tabular-nums; }
+.lb-list li { display: grid; grid-template-columns: 22px 10px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 7px; }
+.lb-list li:nth-child(odd) { background: rgba(255, 255, 255, 0.04); }
+.lb-list li.me { background: rgba(255, 90, 54, 0.22); }
+.lb-list li.gap { display: block; text-align: center; color: var(--muted); background: none; padding: 0; }
+.lb-list .rk { font-family: var(--display); color: var(--muted); font-size: 13px; text-align: right; }
+.lb-list li:nth-child(1) .rk { color: var(--coin); }
+.lb-list i { width: 9px; height: 9px; border-radius: 50%; }
+.lb-list .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-list em { font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--coin); margin-left: 4px; }
+.lb-list .sc { font-family: var(--display); text-align: right; display: grid; line-height: 1.05; }
+.lb-list .sc small { font-family: var(--body); font-size: 10px; color: var(--muted); }
+.lb-nick { display: grid; gap: 4px; }
+.lb-nick label { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.lb-nick div { display: flex; gap: 6px; }
+.lb-nick input { flex: 1; min-width: 0; font: inherit; font-size: 16px; color: var(--ink); background: #1b1a38; border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; }
+.lb-nick button { font: inherit; font-size: 13px; font-weight: 700; color: var(--page); background: var(--ink); border: 0; border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.pedals {
+  position: absolute; left: 10px; right: 10px; bottom: 10px;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 10px;
+  pointer-events: none;
+}
+.pedal {
+  pointer-events: auto; touch-action: none; -webkit-user-select: none; user-select: none;
+  width: 84px; height: 62px; border-radius: 14px; cursor: pointer;
+  display: grid; place-content: center; gap: 1px;
+  font: inherit; color: var(--ink); background: rgba(20, 19, 40, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.18); border-bottom-width: 4px;
+}
+.pedal b { font-family: var(--display); font-weight: 400; font-size: 15px; letter-spacing: 0.04em; }
+.pedal small { font-size: 10px; color: var(--muted); }
+.pedal.brake.on { background: rgba(232, 67, 75, 0.85); border-color: #a3242b; transform: translateY(2px); }
+.pedal.gas.on { background: rgba(63, 191, 95, 0.85); border-color: #237a3a; transform: translateY(2px); }
+.pedal.on small { color: var(--ink); }
+.pedal:focus-visible { outline: 2px solid var(--coin); outline-offset: 2px; }
+.speedo {
+  display: grid; gap: 4px; justify-items: center; padding: 6px 12px; border-radius: 10px;
+  background: rgba(20, 19, 40, 0.62); font-variant-numeric: tabular-nums;
+}
+.speedo b { font-family: var(--display); font-weight: 400; font-size: 22px; }
+.speedo small { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-left: 4px; }
+.speedo .bar { width: 96px; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.16); overflow: hidden; }
+.speedo .bar i { display: block; height: 100%; width: 50%; border-radius: 3px; background: linear-gradient(90deg, #3fbf5f, #ffcf4a, #ff5a36); }
+@media (max-width: 480px) { .pedal { width: 72px; height: 58px; } .speedo b { font-size: 18px; } .speedo .bar { width: 70px; } }
 .pick { margin: 4px 0 -2px; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
 .places { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .places button {
@@ -140,10 +199,15 @@ kbd {
         <div class="stat"><small id="bestLabel">Best</small><b id="best">0</b></div>
       </div>
     </div>
+    <div class="pedals" id="pedals" hidden>
+      <button type="button" class="pedal brake" id="brake" aria-label="Brake (Left arrow or A)"><b>Brake</b><small>&larr; / A</small></button>
+      <div class="speedo" aria-live="off"><span><b id="speed">0</b><small>mph</small></span><span class="bar"><i id="speedbar"></i></span></div>
+      <button type="button" class="pedal gas" id="gas" aria-label="Gas (Right arrow or D)"><b>Gas</b><small>&rarr; / D</small></button>
+    </div>
     <div class="overlay" id="overlay">
       <div class="card" id="card">
         <h2>Ready to ride</h2>
-        <p>Hold Space or your finger to jump. Tap for a hop, hold longer to go higher. Press again mid-air and hold to backflip.</p>
+        <p>Hold Space or your finger to jump. Tap for a hop, hold longer to go higher. Press again mid-air and hold to backflip. Gas and Brake (or the arrow keys) change your speed.</p>
         <p class="go">Tap or press Space to start</p>
       </div>
     </div>
@@ -151,12 +215,14 @@ kbd {
 
   <ul class="legend">
     <li><kbd>Space</kbd> or tap: jump. Hold longer to jump higher</li>
+    <li><kbd>&rarr;</kbd> or Gas: speed up. <kbd>&larr;</kbd> or Brake: slow down. Speed only changes on the ground, and faster means longer jumps</li>
     <li>Tap again in the air and hold: backflip (+150, double flip +600)</li>
     <li>Ramps and kickers launch you automatically; a JUMP! sign means jump at the lip</li>
     <li>Red pads bounce you high. Tall ledges need a longer hold. Duck low branches with a short tap</li>
     <li>Plank bridges collapse half a second after you touch them</li>
     <li>New level every 300 m (Easy), 250 m (Medium), 200 m (Hard)</li>
     <li>Pick a place on the start screen: Forest, Snow, Desert, Mountain, Volcano or Beach (or use the arrow keys)</li>
+    <li>Leaderboard: open it from the start or crash screen (or press L). Set your rider name there</li>
     <li>There are two secrets hidden somewhere</li>
     <li>Coins: +25</li>
     <li>Powerups: shield (saves one crash), coin magnet, super jump, double points, slow-mo, rocket (from level 2)</li>
@@ -192,6 +258,15 @@ kbd {
   const elBest = document.getElementById('best');
   const elLevel = document.getElementById('level');
   const elBestLabel = document.getElementById('bestLabel');
+  const elPedals = document.getElementById('pedals'), elGas = document.getElementById('gas'), elBrake = document.getElementById('brake');
+  const elSpeed = document.getElementById('speed'), elSpeedbar = document.getElementById('speedbar');
+  // throttle: 1 is cruising speed for this distance and difficulty
+  const THR_MIN = 0.5, THR_MAX = 1.5;
+  let thr = 1, bikeLean = 0;
+  const throttle = { gasKey: false, brakeKey: false, gasTouch: false, brakeTouch: false };
+  function gasOn() { return throttle.gasKey || throttle.gasTouch; }
+  function brakeOn() { return throttle.brakeKey || throttle.brakeTouch; }
+  function curSpeed() { return speedAt(rider.x) * thr; }
 
   let W = 1600, VW = 800, scale = 1, dpr = 1;
   let state = 'ready', deadAt = 0, now = 0;
@@ -223,7 +298,7 @@ kbd {
     rider = { x: 0, y: GY, vy: 0, jv: 0, holding: false, a: 0, av: 0, ground: true, rot: 0, ramp: null, spin: false, dead: false,
       shield: false, inv: 0, pw: { magnet: 0, spring: 0, double: 0, slow: 0, rocket: 0 } };
     feats = []; coins = []; powers = []; parts = []; pops = [];
-    camY = 0; nextX = 800; coinCount = 0; bonus = 0; distPts = 0; shownLevel = 1; banner = null;
+    thr = 1; bikeLean = 0; camY = 0; nextX = 800; coinCount = 0; bonus = 0; distPts = 0; shownLevel = 1; banner = null;
     gen();
   }
 
@@ -575,7 +650,7 @@ kbd {
   function pop(text, col) { pops.push({ text, x: rider.x, y: rider.y - 70, life: 1.2, c: col || '#ffcf4a' }); }
 
   function jump() {
-    const spd = speedAt(rider.x);
+    const spd = curSpeed();
     const extra = rider.ramp ? spd * (rider.ramp.h / rider.ramp.w) * 0.6 : 0;
     rider.floorVy = rider.ramp ? -(spd * (rider.ramp.h / rider.ramp.w) * 0.9 + 520) : 0;
     rider.ground = false; rider.vy = -(rider.pw.spring > 0 ? JUMP * 0.78 : JUMP * 0.6) - extra; rider.holdT = 0; rider.holding = true; rider.ramp = null; rider.rot = 0; rider.spin = false;
@@ -619,9 +694,10 @@ kbd {
   function readyCard() {
     showCard(
       '<h2>Ready to ride</h2>' +
-      '<p>Hold Space or your finger to jump. Tap for a hop, hold longer to go higher. Press again mid-air and hold to backflip.</p>' +
+      '<p>Hold Space or your finger to jump. Tap for a hop, hold longer to go higher. Press again mid-air and hold to backflip. Gas and Brake (or the arrow keys) change your speed.</p>' +
       pickers() +
-      '<p class="go">Pick a difficulty, or press Space for ' + M().label + '</p>'
+      '<p class="go">Pick a difficulty, or press Space for ' + M().label + '</p>' +
+      boardButton()
     );
   }
   function loadGold() { try { return localStorage.getItem('ridge-rider-gold') === '1'; } catch (e) { return false; } }
@@ -638,7 +714,159 @@ kbd {
     }
   }
 
+
+  // ---------- leaderboard ----------
+  // In claude.ai the board is shared by everyone who opens the link (db capability).
+  // Anywhere else (e.g. GitHub Pages) it falls back to the top scores saved on this device.
+  const LB = { db: null, user: null, uid: null, rows: [], shared: false, ready: false, error: '', canWrite: true, open: false, tab: null, prevHtml: '', status: '' };
+  let nick = '';
+  try { nick = cleanNick(localStorage.getItem('ridge-rider-nick') || ''); } catch (e) {}
+  function cleanNick(t) { return String(t || '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 16); }
+  function esc(t) { return String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+  function localBoard() { try { const b = JSON.parse(localStorage.getItem('ridge-rider-board') || '{}'); return b && typeof b === 'object' ? b : {}; } catch (e) { return {}; } }
+  function saveLocalBoard(b) { try { localStorage.setItem('ridge-rider-board', JSON.stringify(b)); } catch (e) {} }
+  function num(v) { return typeof v === 'number' && isFinite(v) ? v : null; }
+  function cleanEntry(e) {
+    if (!e || typeof e !== 'object' || num(e.score) === null) return null;
+    return { score: Math.max(0, Math.floor(e.score)), dist: Math.max(0, Math.floor(num(e.dist) || 0)), place: PLACES[e.place] ? e.place : 'forest', moon: e.moon === true, at: num(e.at) || 0 };
+  }
+
+  async function initBoard() {
+    if (!window.claude || typeof window.claude.use !== 'function') return;
+    let db = null, user = null;
+    try { [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]); } catch (e) { return; }
+    if (!db) return;
+    LB.db = db; LB.user = user; LB.shared = true;
+    LB.uid = user ? await user.id() : null;
+    if (!LB.uid) LB.canWrite = false;
+    if (user && (await user.can('data.write')) === false) LB.canWrite = false;
+    const timer = setTimeout(() => { if (!LB.ready) { LB.error = 'The leaderboard can\'t be reached yet. Scores may be out of date.'; renderBoard(); } }, 10000);
+    db.collection('scores').limit(1000).onSnapshot(snap => {
+      LB.rows = snap.docs.filter(d => d.exists).map(d => ({ id: d.id, body: d.data() || {} }));
+      if (!snap.metadata.fromCache) { LB.ready = true; LB.error = ''; clearTimeout(timer); }
+      renderBoard();
+    }, () => {
+      clearTimeout(timer);
+      LB.error = 'The leaderboard stopped updating. Reload the page to try again.';
+      renderBoard();
+    });
+  }
+
+  function boardRows(m) {
+    if (LB.shared) {
+      return LB.rows.map(r => {
+        const e = cleanEntry(r.body[m]);
+        return e && Object.assign(e, { id: r.id, nick: cleanNick(r.body.nick), me: r.id === LB.uid });
+      }).filter(Boolean).sort((a, b) => b.score - a.score || a.at - b.at);
+    }
+    const list = Array.isArray(localBoard()[m]) ? localBoard()[m] : [];
+    return list.map(e => { const c = cleanEntry(e); return c && Object.assign(c, { nick: cleanNick(e.nick), me: false, mine: e.at === LB.lastAt }); })
+      .filter(Boolean).sort((a, b) => b.score - a.score || a.at - b.at);
+  }
+
+  async function submitScore(score) {
+    const entry = { score, dist: Math.floor(rider.x / 10), place, moon: !!moon, at: Date.now() };
+    if (score <= 0) return null;
+    if (!LB.shared) {
+      const b = localBoard();
+      const list = (Array.isArray(b[mode]) ? b[mode] : []).concat([Object.assign({ nick: nick }, entry)]);
+      list.sort((x, y) => (y.score || 0) - (x.score || 0));
+      b[mode] = list.slice(0, 10);
+      saveLocalBoard(b);
+      LB.lastAt = entry.at;
+      const i = b[mode].findIndex(e => e.at === entry.at);
+      return i >= 0 ? { rank: i + 1, saved: true } : null;
+    }
+    if (!LB.canWrite || !LB.uid) return { blocked: true };
+    const mine = (LB.rows.find(r => r.id === LB.uid) || {}).body || {};
+    const prev = cleanEntry(mine[mode]);
+    if (!prev || score > prev.score) {
+      const body = {};
+      for (const k of ['easy', 'medium', 'hard']) { const e = cleanEntry(mine[k]); if (e) body[k] = e; }
+      body[mode] = entry;
+      const n = cleanNick(mine.nick) || nick;
+      if (n) body.nick = n;
+      try { await LB.db.doc('scores/' + LB.uid).set(body); }
+      catch (e) {
+        if (e && e.code === 'invalid_argument') LB.canWrite = false;
+        return { blocked: e && e.code === 'invalid_argument', failed: true };
+      }
+    }
+    // rank against the board including this run
+    const rows = boardRows(mode);
+    const best = Math.max(score, prev ? prev.score : 0);
+    const rank = rows.filter(r => r.id !== LB.uid && r.score > best).length + 1;
+    return { rank, saved: !prev || score > prev.score, personal: best };
+  }
+
+  async function saveNick(value) {
+    const n = cleanNick(value);
+    nick = n;
+    try { localStorage.setItem('ridge-rider-nick', n); } catch (e) {}
+    if (LB.shared && LB.canWrite && LB.uid) {
+      const mine = (LB.rows.find(r => r.id === LB.uid) || {}).body || {};
+      const body = {};
+      for (const k of ['easy', 'medium', 'hard']) { const e = cleanEntry(mine[k]); if (e) body[k] = e; }
+      if (n) body.nick = n;
+      try { await LB.db.doc('scores/' + LB.uid).set(body); LB.status = 'Name saved.'; }
+      catch (e) { LB.status = 'Couldn\'t save your name. Try again in a moment.'; if (e && e.code === 'invalid_argument') LB.canWrite = false; }
+    } else {
+      LB.status = 'Name saved.';
+    }
+    renderBoard();
+  }
+
+  function openBoard() {
+    LB.prevHtml = card.innerHTML;
+    LB.open = true; LB.tab = LB.tab || mode; LB.status = '';
+    renderBoard();
+  }
+  function closeBoard() {
+    LB.open = false;
+    card.innerHTML = LB.prevHtml;
+  }
+  let boardRender = 0;
+  async function renderBoard() {
+    if (!LB.open) return;
+    const ticket = ++boardRender;
+    const m = LB.tab;
+    const rows = boardRows(m);
+    let names = {};
+    if (LB.shared && LB.user) {
+      const ids = rows.slice(0, 10).map(r => r.id).concat(LB.uid ? [LB.uid] : []);
+      try { names = await LB.user.profiles(ids); } catch (e) { names = {}; }
+      if (ticket !== boardRender || !LB.open) return;
+    }
+    const nameOf = r => r.nick || (names[r.id] && names[r.id].name) || (r.me || r.mine ? (nick || 'You') : 'Rider');
+    const top = rows.slice(0, 10);
+    const myIdx = rows.findIndex(r => r.me);
+    const line = (r, i) =>
+      '<li class="' + (r.me || r.mine ? 'me' : '') + '"><span class="rk">' + (i + 1) + '</span>' +
+      '<i title="' + esc(PLACES[r.place].label) + '" style="background:' + PLACES[r.place].dot + '"></i>' +
+      '<span class="nm">' + esc(nameOf(r)) + (r.me || r.mine ? ' <em>you</em>' : '') + (r.moon ? ' <em>moon</em>' : '') + '</span>' +
+      '<span class="sc">' + r.score.toLocaleString() + '<small>' + r.dist.toLocaleString() + ' m</small></span></li>';
+    let list = top.map(line).join('');
+    if (myIdx >= 10) list += '<li class="gap" aria-hidden="true">...</li>' + line(rows[myIdx], myIdx);
+    const scope = LB.shared ? 'Everyone who opens this game shares this board.' : 'Top 10 scores saved on this device.';
+    let note = '';
+    if (LB.error) note = LB.error;
+    else if (LB.shared && !LB.ready && !rows.length) note = 'Loading scores...';
+    else if (LB.shared && !LB.canWrite) note = 'You can see the board, but your scores aren\'t posted. The game\'s owner can give you Contributor access.';
+    card.innerHTML =
+      '<div class="lb" data-ui>' +
+        '<div class="lb-head"><h2>Leaderboard</h2><button type="button" class="lb-back" data-act="close">Back</button></div>' +
+        '<div class="lb-tabs" role="tablist">' + Object.keys(MODES).map(k => '<button type="button" role="tab" data-tab="' + k + '" aria-selected="' + (k === m) + '">' + MODES[k].label + '</button>').join('') + '</div>' +
+        '<p class="lb-scope">' + scope + '</p>' +
+        (rows.length ? '<ol class="lb-list">' + list + '</ol>' : '<p class="lb-empty">No ' + MODES[m].label + ' scores yet. Ride to set the first one.</p>') +
+        (note ? '<p class="lb-note">' + esc(note) + '</p>' : '') +
+        (!LB.shared || LB.canWrite ? '<form class="lb-nick" data-act="nick"><label for="nick">Your rider name</label><div><input id="nick" maxlength="16" autocomplete="off" placeholder="' + esc(LB.shared ? ((names[LB.uid] && names[LB.uid].name) || 'Rider') : 'You') + '" value="' + esc(nick) + '"><button type="submit">Save</button></div></form>' : '') +
+        (LB.status ? '<p class="lb-note" role="status">' + esc(LB.status) + '</p>' : '') +
+      '</div>';
+  }
+  function boardButton() { return '<button type="button" class="lb-open" data-ui data-act="board">Leaderboard</button>'; }
+
   function startMode(m) {
+    LB.open = false;
     mode = m; best = loadBest(); reset(); state = 'run'; overlay.hidden = true;
   }
 
@@ -654,9 +882,20 @@ kbd {
       '<h2>' + msg + '</h2>' +
       '<div class="big">' + s.toLocaleString() + '</div>' +
       '<p>' + P().label + ', ' + M().label + (moon ? ' (moon)' : '') + ', level ' + levelAt(rider.x) + ', ' + Math.floor(rider.x / 10).toLocaleString() + ' m, ' + coinCount + ' coins' + (newBest ? ', new best' : ', best ' + best.toLocaleString()) + '</p>' +
+      '<p class="lb-rank" id="rankline"></p>' +
       pickers() +
-      '<p class="go">Press Space to ride ' + M().label + ' again</p>'
+      '<p class="go">Press Space to ride ' + M().label + ' again</p>' +
+      boardButton()
     );
+    const runMode = MODES[mode].label;
+    submitScore(s).then(r => {
+      const el = document.getElementById('rankline');
+      if (!el || !r) return;
+      if (r.blocked) el.textContent = 'Score not posted to the leaderboard.';
+      else if (r.failed) el.textContent = 'Couldn\'t post your score. It will try again on your next run.';
+      else if (r.rank && r.rank <= 10) el.textContent = (r.saved === false ? 'Your best is #' : '#') + r.rank + ' on the ' + runMode + ' leaderboard' + (r.saved === false ? '' : '!');
+      else if (r.rank) el.textContent = 'Your best is #' + r.rank + ' on the ' + runMode + ' leaderboard.';
+    });
   }
 
   function showCard(html) { card.innerHTML = html; overlay.hidden = false; }
@@ -664,6 +903,7 @@ kbd {
   function mult() { return rider.pw.double > 0 ? 2 : 1; }
 
   function press() {
+    LB.open = false;
     if (state === 'ready') { state = 'run'; overlay.hidden = true; return; }
     if (state === 'dead') { if (now - deadAt > 0.6) { reset(); state = 'run'; overlay.hidden = true; } return; }
     if (rider.ground) jump(); else rider.spin = true;
@@ -706,7 +946,14 @@ kbd {
     if (state !== 'run') return;
 
     if (gold && Math.random() < 0.5) parts.push({ x: rider.x - 24 + rnd(-6, 6), y: rider.y - rnd(4, 30), vx: -rnd(40, 120), vy: rnd(-30, 10), life: rnd(0.25, 0.5), c: Math.random() < 0.5 ? '#ffcf4a' : '#fff1b8', r: rnd(1.5, 3) });
-    const spd = speedAt(rider.x);
+    // gas and brake only bite while the wheels are on the ground
+    const want = gasOn() && !brakeOn() ? THR_MAX : brakeOn() ? THR_MIN : 1;
+    if (rider.ground && rider.pw.rocket <= 0) {
+      thr += (want - thr) * Math.min(1, dt * (want < thr ? 2.6 : 1.3));
+      if (want > 1 && Math.random() < 0.5) parts.push({ x: rider.x - 26, y: rider.y - 14 + rnd(-2, 2), vx: -rnd(60, 140), vy: -rnd(10, 50), life: rnd(0.25, 0.45), c: Math.random() < 0.5 ? '#9a96b0' : '#c9c4dc', r: rnd(2, 4) });
+      if (want < 1 && thr > 0.62 && Math.random() < 0.7) parts.push({ x: rider.x - 18, y: rider.y - 2, vx: rnd(-40, 80), vy: -rnd(40, 140), life: rnd(0.25, 0.5), c: Math.random() < 0.5 ? '#8a6243' : '#c49a72', r: rnd(2, 3.5) });
+    }
+    const spd = curSpeed();
     const step = spd * (rider.pw.rocket > 0 ? 1.6 : 1) * dt;
     rider.x += step;
     distPts += step / 10 * mult();
@@ -1592,6 +1839,8 @@ kbd {
     if (ry > 2.6) target = (ry - 2.6) * 0.75;
     else if (ry < -0.5) target = (ry + 0.5) * 0.55;
     if (state !== 'dead') camY += (target - camY) * Math.min(1, dt * 6);
+    const fovNow = vfov + (thr - 1) * 9 + (rider.pw.rocket > 0 ? 6 : 0);
+    if (Math.abs(camera.fov - fovNow) > 0.01) { camera.fov += (fovNow - camera.fov) * Math.min(1, dt * 5); camera.updateProjectionMatrix(); }
     camera.position.set(rx + CAM.x, camY + CAM.y, CAM.z);
     camera.lookAt(rx + CAM.lx, camY + CAM.ly, CAM.lz);
     camera.updateMatrixWorld();
@@ -1626,7 +1875,9 @@ kbd {
     layoutPowers(t);
     layoutParticles();
     bike.position.set(rider.x, GY - rider.y, 0);
-    bike.rotation.z = -rider.a;
+    const leanTo = state === 'run' && rider.ground ? (gasOn() && !brakeOn() ? 0.09 : brakeOn() ? -0.07 : 0) : 0;
+    bikeLean += (leanTo - bikeLean) * Math.min(1, dt * 8);
+    bike.rotation.z = -rider.a + bikeLean;
     wheels.forEach(w => { w.rotation.z = -rider.x / 9; });
     bike.visible = !(rider.inv > 0 && state === 'run' && Math.floor(t * 20) % 2 === 0);
     shieldBall.visible = rider.shield && !rider.dead;
@@ -1711,7 +1962,7 @@ kbd {
     for (const k of ['rocket', 'magnet', 'spring', 'double', 'slow']) if (rider.pw[k] > 0) list.push([k, rider.pw[k] / PU[k].dur]);
     let x = 22;
     for (const [k, frac] of list) {
-      const y = H - 24;
+      const y = 76;
       ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.arc(x, y, 16, 0, TAU); ctx.stroke();
       ctx.strokeStyle = '#ffffff';
@@ -1732,6 +1983,15 @@ kbd {
     elBest.textContent = best.toLocaleString();
     elLevel.textContent = levelAt(rider.x);
     elBestLabel.textContent = 'Best ' + M().label;
+    const running = state === 'run';
+    if (elPedals.hidden === running) elPedals.hidden = !running;
+    if (running) {
+      const v = curSpeed() * (rider.pw.rocket > 0 ? 1.6 : 1);
+      elSpeed.textContent = Math.round(v / 10 * 2.237);
+      elSpeedbar.style.width = Math.round(Math.max(0, Math.min(1, (thr - THR_MIN) / (THR_MAX - THR_MIN))) * 100) + '%';
+      elGas.classList.toggle('on', gasOn() && !brakeOn());
+      elBrake.classList.toggle('on', brakeOn());
+    }
   }
 
   let last = 0;
@@ -1747,14 +2007,33 @@ kbd {
 
   // input
   window.addEventListener('keydown', e => {
+    if (typing(e) || (LB.open && e.code !== 'Escape')) return;
+    if (state === 'run' && (e.code === 'ArrowRight' || e.code === 'KeyD')) { e.preventDefault(); throttle.gasKey = true; }
+    if (state === 'run' && (e.code === 'ArrowLeft' || e.code === 'KeyA')) { e.preventDefault(); throttle.brakeKey = true; }
     if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
       e.preventDefault();
       if (!e.repeat) press();
     }
   });
   window.addEventListener('keyup', e => {
+    if (e.code === 'ArrowRight' || e.code === 'KeyD') throttle.gasKey = false;
+    if (e.code === 'ArrowLeft' || e.code === 'KeyA') throttle.brakeKey = false;
     if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') release();
   });
+  // on-screen pedals: each finger is tracked on its own, so you can hold Gas and tap to jump
+  for (const [el, key] of [[elGas, 'gasTouch'], [elBrake, 'brakeTouch']]) {
+    el.addEventListener('pointerdown', e => {
+      e.preventDefault(); e.stopPropagation();
+      throttle[key] = true;
+      try { el.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    const off = () => { throttle[key] = false; };
+    el.addEventListener('pointerup', e => { e.stopPropagation(); off(); });
+    el.addEventListener('pointercancel', off);
+    el.addEventListener('lostpointercapture', off);
+    el.addEventListener('contextmenu', e => e.preventDefault());
+  }
+  let jumpPointer = null;
   let sunTaps = 0, sunTapAt = 0;
   function hitSun(e) {
     const r = stage.getBoundingClientRect();
@@ -1770,6 +2049,7 @@ kbd {
     feats = feats.filter(f => f.x < rider.x + 200); nextX = Math.max(rider.x + 600, 800); coins = []; powers = []; gen();
   }
   card.addEventListener('pointerdown', e => {
+    if (e.target.closest('[data-ui]')) { e.stopPropagation(); return; }
     const pb = e.target.closest('button[data-place]');
     if (pb) { e.preventDefault(); e.stopPropagation(); setPlace(pb.dataset.place); return; }
     const b = e.target.closest('button[data-mode]');
@@ -1777,6 +2057,20 @@ kbd {
     e.preventDefault(); e.stopPropagation();
     startMode(b.dataset.mode);
   });
+  card.addEventListener('click', e => {
+    const a = e.target.closest('[data-act]');
+    const t = e.target.closest('button[data-tab]');
+    if (t) { LB.tab = t.dataset.tab; LB.status = ''; renderBoard(); return; }
+    if (!a || a.tagName === 'FORM') return;
+    if (a.dataset.act === 'board') openBoard();
+    if (a.dataset.act === 'close') closeBoard();
+  });
+  card.addEventListener('submit', e => {
+    e.preventDefault();
+    const input = card.querySelector('#nick');
+    if (input) saveNick(input.value);
+  });
+  function typing(e) { return e.target && e.target.closest && e.target.closest('input, textarea'); }
   stage.addEventListener('pointerdown', e => {
     e.preventDefault(); stage.focus({ preventScroll: true });
     if (state !== 'run' && hitSun(e)) {
@@ -1784,10 +2078,13 @@ kbd {
       if (sunTaps >= 3) { sunTaps = 0; toggleMoon(); }
       return;
     }
+    jumpPointer = e.pointerId;
     press();
   });
   window.addEventListener('keydown', e => {
-    if (state === 'run') return;
+    if (LB.open && e.code === 'Escape') { closeBoard(); return; }
+    if (state === 'run' || typing(e) || LB.open) return;
+    if (e.code === 'KeyL') { openBoard(); return; }
     const k = { Digit1: 'easy', Digit2: 'medium', Digit3: 'hard' }[e.code];
     if (k) startMode(k);
     if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
@@ -1795,11 +2092,12 @@ kbd {
       setPlace(ks[(ks.indexOf(place) + (e.code === 'ArrowRight' ? 1 : n - 1)) % n]);
     }
   });
-  window.addEventListener('pointerup', release);
-  window.addEventListener('pointercancel', release);
+  window.addEventListener('pointerup', e => { if (jumpPointer === null || e.pointerId === jumpPointer) { jumpPointer = null; release(); } });
+  window.addEventListener('pointercancel', e => { if (jumpPointer === null || e.pointerId === jumpPointer) { jumpPointer = null; release(); } });
   stage.addEventListener('contextmenu', e => e.preventDefault());
   window.addEventListener('resize', resize);
-  document.addEventListener('visibilitychange', () => { last = performance.now(); release(); });
+  document.addEventListener('visibilitychange', () => { last = performance.now(); release(); for (const k in throttle) throttle[k] = false; });
+  window.addEventListener('blur', () => { for (const k in throttle) throttle[k] = false; });
 
   function start(data) {
     best = loadBest();
@@ -1807,6 +2105,7 @@ kbd {
     resize();
     reset();
     readyCard();
+    initBoard();
     requestAnimationFrame(ts => { last = ts; frame(ts); });
   }
   start({});
